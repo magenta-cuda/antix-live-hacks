@@ -1,3 +1,5 @@
 # antix-live-hacks
 
 I use antiX Live to run WordPress in a Docker container on a 4GB RAM machine. These are the hacks I use to get Docker to work with very limited memory in a live environment. 
+
+Docker has a very large sparse file in /var/lib/docker. There are two problems for antiX Live with this. First, persist-save expands sparse files when they are copied from the tmpfs to the rootfs. Second, init also expands sparse files when they are copied from the rootfs to the tmpfs. The first problem is easily fixed by adding the -S option to rsync. The second problem is much harder to fix as init runs in the environment of initrd. In particular, cp is implemented by busybox which always expands sparse files. The solution recommended by AI is to replace busybox's cp with the glib version of cp which can preserve spareness. Unfortunately, compiling binaries is not in my current skill set so as a workaround I will fix init to skip the large sparse file and load it later when the more capable cp of the loaded filesystem is available.
